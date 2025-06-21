@@ -1,5 +1,11 @@
 import { CONSTANTS } from "./constants";
 
+/**
+ * Retrieves the current price of a specified token from the Jupiter API.
+ *
+ * @param token - The token identifier to fetch the price for
+ * @returns The current price of the token, or 0 if unavailable
+ */
 export async function fetchTokenPrice(token: string): Promise<number> {
   const jupData = await fetch(
     `https://lite-api.jup.ag/price/v2?ids=${token}`
@@ -10,6 +16,11 @@ export async function fetchTokenPrice(token: string): Promise<number> {
   return price;
 }
 
+/**
+ * Retrieves the liquidity value for a specified token address from the BirdEye API.
+ *
+ * Returns the liquidity as a number if available, or null if the API token is missing, the request fails, or liquidity data is unavailable.
+ */
 export async function fetchLiquidity(address: string): Promise<number | null> {
   const token = process.env.BIRDEYE_TOKEN;
 
@@ -41,6 +52,12 @@ export async function fetchLiquidity(address: string): Promise<number | null> {
   }
 }
 
+/**
+ * Retrieves a token overview from the BirdEye API, including market capitalization, 24-hour price change percentage, holder count, liquidity, and raw data.
+ *
+ * @param address - The token address to fetch the overview for
+ * @returns An object containing marketCap, priceChange24hPercent, holder, liquidity, and raw data, or null if unavailable
+ */
 export async function fetchTokenOverview(address: string): Promise<{
   marketCap: number;
   priceChange24hPercent: number;
@@ -84,6 +101,12 @@ export async function fetchTokenOverview(address: string): Promise<{
   }
 }
 
+/**
+ * Calculates the 1-week and 1-month percentage price changes for the LABS token based on historical price data from the BirdEye API.
+ *
+ * @param currentPrice - The current price of the LABS token used as the reference for change calculations.
+ * @returns An object containing the percentage changes over 1 week (`change1w`) and 1 month (`change1m`), or `null` values if data is unavailable.
+ */
 export async function fetchLabsHistoricalChange(currentPrice: number): Promise<{
   change1w: number | null;
   change1m: number | null;
