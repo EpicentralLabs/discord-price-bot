@@ -6,39 +6,12 @@ import {
 } from "discord.js";
 import { formatters } from "../utils/formatters";
 import { CONSTANTS } from "../utils/constants";
-import { fetchTokenPrice } from "../utils/api";
+import {
+  fetchTokenPrice,
+  fetchTokenOverview,
+  fetchLabsHistoricalChange,
+} from "../utils/api";
 import { config } from "../config";
-
-async function fetchLiquidity(address: string): Promise<number | null> {
-  const token = process.env.BIRDEYE_TOKEN;
-
-  if (!token) {
-    console.warn("BirdEye API token is missing.");
-    return null;
-  }
-  try {
-    const res = await fetch(
-      `https://public-api.birdeye.so/defi/price?include_liquidity=true&address=${address}`,
-      {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          "x-chain": "solana",
-          "X-API-KEY": token,
-        },
-      }
-    );
-    if (!res.ok) {
-      console.warn(`BirdEye API error for ${address}: ${res.statusText}`);
-      return null;
-    }
-    const data = await res.json();
-    return data?.success ? data.data.liquidity ?? null : null;
-  } catch (err) {
-    console.error(`Failed to fetch liquidity for ${address}:`, err);
-    return null;
-  }
-}
 
 export const command = new SlashCommandBuilder()
   .setName("price")
@@ -51,9 +24,10 @@ export async function handlePriceCommand(
   console.log("Fetching prices and liquidity...");
 
   try {
-    const liquidity = await fetchLiquidity(CONSTANTS.TOKEN.LABS)
-    const labsPrice = await fetchTokenPrice(CONSTANTS.TOKEN.LABS)
+    const labsPrice = await fetchTokenPrice(CONSTANTS.TOKEN.LABS);
     const solPrice = await fetchTokenPrice(CONSTANTS.TOKEN.SOL);
+    const labsOverview = await fetchTokenOverview(CONSTANTS.TOKEN.LABS);
+    const { change1w, change1m } = await fetchLabsHistoricalChange(labsPrice);
 
     if (labsPrice && solPrice) {
       const formattedLabs = `$${labsPrice.toFixed(4)}`;
@@ -61,23 +35,72 @@ export async function handlePriceCommand(
       const labsPerSol = labsPrice / solPrice;
       const formattedLabsSol = labsPerSol.toFixed(6);
 
-      const formattedLabsLiquidity =
-        liquidity !== null ? `$${formatters.usdValue(liquidity)}` : "N/A";
+      const formattedLabsLiquidity = labsOverview
+        ? `$${formatters.usdValue(labsOverview.liquidity)}`
+        : "N/A";
+      const formattedMarketCap = labsOverview
+        ? `$${formatters.usdValue(labsOverview.marketCap)}`
+        : "N/A";
+      const formattedHolders = labsOverview
+        ? labsOverview.holder.toString()
+        : "N/A";
+      const formattedPercent = labsOverview
+        ? `${labsOverview.priceChange24hPercent.toFixed(2)}%`
+        : "N/A";
+      const formattedChange1w = change1w ? `${change1w.toFixed(2)}%` : "N/A";
+      const formattedChange1m = change1m ? `${change1m.toFixed(2)}%` : "N/A";
 
       const embed = new EmbedBuilder()
         .setColor(CONSTANTS.COLORS.PRIMARY)
         .setTitle("🟦 Labs Token Prices & Liquidity")
         .addFields(
-          { name: "Price", value: formatters.codeBlock(formattedLabs), inline: true },
+          {
+            name: "Price",
+            value: formatters.codeBlock(formattedLabs),
+            inline: true,
+          },
           {
             name: "Liquidity",
             value: formatters.codeBlock(formattedLabsLiquidity),
             inline: true,
           },
-          { name: "LABS/SOL", value: formatters.codeBlock(formattedLabsSol), inline: true },
-
+          {
+            name: "LABS/SOL",
+            value: formatters.codeBlock(formattedLabsSol),
+            inline: true,
+          },
+          {
+            name: "Market Cap",
+            value: formatters.codeBlock(formattedMarketCap),
+            inline: true,
+          },
+          {
+            name: "Holders",
+            value: formatters.codeBlock(formattedHolders),
+            inline: true,
+          },
+          { name: "\u200B", value: "\u200B", inline: true }, // filler for layout
+          {
+            name: "1d Change",
+            value: formatters.codeBlock(formattedPercent),
+            inline: true,
+          },
+          {
+            name: "1w Change",
+            value: formatters.codeBlock(formattedChange1w),
+            inline: true,
+          },
+          {
+            name: "1m Change",
+            value: formatters.codeBlock(formattedChange1m),
+            inline: true,
+          },
           { name: "**📈 Market Tokens**", value: "", inline: false },
-          { name: "SOL", value: formatters.codeBlock(formattedSOL), inline: true },
+          {
+            name: "SOL",
+            value: formatters.codeBlock(formattedSOL),
+            inline: true,
+          }
         )
         .setFooter({ text: "Prices from BirdEye and Jupiter APIs" });
 

@@ -19,9 +19,9 @@ export async function setupCommands(client: Client) {
   ].map((command) => command.toJSON());
   const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
   try {
-    // Global commands (can take up to 1 hour) with our a guild ID 
-    await rest.put(Routes.applicationGuildCommands(client.application.id, config.DEFAULT_GUILD_ID), {
-    // await rest.put(Routes.applicationCommands(client.application.id), {
+    // Global commands (can take up to 1 hour) without a guild ID 
+    // await rest.put(Routes.applicationGuildCommands(client.application.id, config.DEFAULT_GUILD_ID), {
+    await rest.put(Routes.applicationCommands(client.application.id), {
       body: commands,
     });
     console.log("Successfully reloaded application (/) commands:");
