@@ -7,6 +7,11 @@ const commandHandlers = {
   [price.command.name]: price.handlePriceCommand,
 } as const;
 
+/**
+ * Registers global Discord slash commands and sets up interaction handlers for the client.
+ *
+ * Throws an error if the client application is not ready. Registers commands globally using the Discord REST API and logs the registration status. Listens for chat input command interactions and dispatches them to the appropriate handler, replying with an error message if the command is unknown or if an exception occurs during handling.
+ */
 export async function setupCommands(client: Client) {
   if (!client.application) {
     throw new Error("Client application is not ready");
@@ -19,9 +24,9 @@ export async function setupCommands(client: Client) {
   ].map((command) => command.toJSON());
   const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
   try {
-    // Global commands (can take up to 1 hour) with our a guild ID 
-    await rest.put(Routes.applicationGuildCommands(client.application.id, config.DEFAULT_GUILD_ID), {
-    // await rest.put(Routes.applicationCommands(client.application.id), {
+    // Global commands (can take up to 1 hour) without a guild ID 
+    // await rest.put(Routes.applicationGuildCommands(client.application.id, config.DEFAULT_GUILD_ID), {
+    await rest.put(Routes.applicationCommands(client.application.id), {
       body: commands,
     });
     console.log("Successfully reloaded application (/) commands:");
