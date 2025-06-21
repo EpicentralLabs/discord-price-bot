@@ -100,9 +100,9 @@ export async function fetchLabsHistoricalChange(currentPrice: number): Promise<{
   const now = Math.floor(Date.now() / 1000);
   const oneWeekAgo = now - 7 * 24 * 60 * 60;
   const oneMonthAgo = now - 30 * 24 * 60 * 60;
-  const time_to = 10000000000; // max value
+  const MAX_TIMESTAMP = 10000000000; // Maximum Unix timestamp for API queries
 
-  const url = `https://public-api.birdeye.so/defi/history_price?address=${address}&address_type=token&type=1D&time_from=${oneMonthAgo}&time_to=${time_to}`;
+  const url = `https://public-api.birdeye.so/defi/history_price?address=${address}&address_type=token&type=1D&time_from=${oneMonthAgo}&time_to=${MAX_TIMESTAMP}`;
 
   try {
     const res = await fetch(url, {
@@ -118,7 +118,8 @@ export async function fetchLabsHistoricalChange(currentPrice: number): Promise<{
       return { change1w: null, change1m: null };
     }
     const data = await res.json();
-    if (!data?.success || !data.data?.items?.length) return { change1w: null, change1m: null };
+    if (!data?.success || !data.data?.items?.length)
+      return { change1w: null, change1m: null };
 
     // Find the closest price to 1w and 1m ago
     let price1w: number | null = null;
@@ -139,8 +140,12 @@ export async function fetchLabsHistoricalChange(currentPrice: number): Promise<{
       }
     }
 
-    const change1w = price1w ? ((currentPrice - price1w) / price1w) * 100 : null;
-    const change1m = price1m ? ((currentPrice - price1m) / price1m) * 100 : null;
+    const change1w = price1w
+      ? ((currentPrice - price1w) / price1w) * 100
+      : null;
+    const change1m = price1m
+      ? ((currentPrice - price1m) / price1m) * 100
+      : null;
 
     return { change1w, change1m };
   } catch (err) {
