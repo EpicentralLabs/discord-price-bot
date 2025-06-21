@@ -7,6 +7,11 @@ const commandHandlers = {
   [price.command.name]: price.handlePriceCommand,
 } as const;
 
+/**
+ * Registers global Discord slash commands and sets up interaction handlers for the client.
+ *
+ * Throws an error if the client application is not ready. Registers commands globally using the Discord REST API and logs the registration status. Listens for chat input command interactions and dispatches them to the appropriate handler, replying with an error message if the command is unknown or if an exception occurs during handling.
+ */
 export async function setupCommands(client: Client) {
   if (!client.application) {
     throw new Error("Client application is not ready");

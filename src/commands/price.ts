@@ -17,6 +17,11 @@ export const command = new SlashCommandBuilder()
   .setName("price")
   .setDescription("Get the current prices and liquidity for LABS and SOL.");
 
+/**
+ * Handles the `/price` Discord slash command by fetching and displaying current price, liquidity, market cap, holder count, and recent price changes for LABS and SOL tokens.
+ *
+ * Responds with an embedded message containing up-to-date token metrics, or an error message if data retrieval fails.
+ */
 export async function handlePriceCommand(
   interaction: ChatInputCommandInteraction
 ) {
