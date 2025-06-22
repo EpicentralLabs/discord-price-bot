@@ -86,17 +86,17 @@ export async function handlePriceCommand(
           },
           { name: "\u200B", value: "\u200B", inline: true }, // filler for layout
           {
-            name: "1d Change",
+            name: "1D Change",
             value: formatters.codeBlock(formattedPercent),
             inline: true,
           },
           {
-            name: "1w Change",
+            name: "1W Change",
             value: formatters.codeBlock(formattedChange1w),
             inline: true,
           },
           {
-            name: "1m Change",
+            name: "1Mo Change",
             value: formatters.codeBlock(formattedChange1m),
             inline: true,
           },
