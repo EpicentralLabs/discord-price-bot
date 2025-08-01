@@ -189,6 +189,12 @@ export async function fetchTokenPriceVolume(
   volumeUSD: number;
   volumeChangePercent: number;
 } | null> {
+  const token = process.env.BIRDEYE_TOKEN;
+  if (!token) {
+    console.warn("BirdEye API token is missing.");
+    return null;
+  }
+
   try {
     const res = await fetch(
       `https://public-api.birdeye.so/defi/price_volume/single?address=${address}&type=${interval}`,
@@ -197,11 +203,16 @@ export async function fetchTokenPriceVolume(
         headers: {
           accept: "application/json",
           "x-chain": "solana",
-          "X-API-KEY": process.env.BIRDEYE_TOKEN || "",
+          "X-API-KEY": token,
         },
       }
     );
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.warn(
+        `BirdEye API error (price_volume) for ${address}: ${res.statusText}`
+      );
+      return null;
+    }
     const data = await res.json();
     if (!data.success) return null;
     return {
@@ -211,7 +222,7 @@ export async function fetchTokenPriceVolume(
       volumeChangePercent: data.data.volumeChangePercent,
     };
   } catch (err) {
-    console.error("Failed to fetch price/volume:", err);
+    console.error(`Failed to fetch price/volume for ${address}:`, err);
     return null;
   }
 }

@@ -34,14 +34,10 @@ export async function handlePriceCommand(
     const solPrice = await fetchTokenPrice(CONSTANTS.TOKEN.SOL);
     const labsOverview = await fetchTokenOverview(CONSTANTS.TOKEN.LABS);
     const { change1w, change1m } = await fetchLabsHistoricalChange(labsPrice);
-    const labsVolumeData = await fetchTokenPriceVolume(
-      CONSTANTS.TOKEN.LABS,
-      "24h"
-    );
-    const labsVolumeData1Hr = await fetchTokenPriceVolume(
-      CONSTANTS.TOKEN.LABS,
-      "1h"
-    );
+    const [labsVolumeData, labsVolumeData1Hr] = await Promise.all([
+      fetchTokenPriceVolume(CONSTANTS.TOKEN.LABS, "24h"),
+      fetchTokenPriceVolume(CONSTANTS.TOKEN.LABS, "1h"),
+    ]);
 
     if (labsPrice && solPrice) {
       const formattedLabs = `$${labsPrice.toFixed(4)}`;
