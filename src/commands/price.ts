@@ -34,8 +34,14 @@ export async function handlePriceCommand(
     const solPrice = await fetchTokenPrice(CONSTANTS.TOKEN.SOL);
     const labsOverview = await fetchTokenOverview(CONSTANTS.TOKEN.LABS);
     const { change1w, change1m } = await fetchLabsHistoricalChange(labsPrice);
-    const labsVolumeData = await fetchTokenPriceVolume(CONSTANTS.TOKEN.LABS, "24h");
-    const labsVolumeData1Hr = await fetchTokenPriceVolume(CONSTANTS.TOKEN.LABS, "1h");
+    const labsVolumeData = await fetchTokenPriceVolume(
+      CONSTANTS.TOKEN.LABS,
+      "24h"
+    );
+    const labsVolumeData1Hr = await fetchTokenPriceVolume(
+      CONSTANTS.TOKEN.LABS,
+      "1h"
+    );
 
     if (labsPrice && solPrice) {
       const formattedLabs = `$${labsPrice.toFixed(4)}`;
@@ -110,13 +116,13 @@ export async function handlePriceCommand(
             inline: true,
           },
           {
-            name: "1D Volume",
-            value: formatters.codeBlock(formattedVolumeDUSD),
+            name: "1Hr Volume",
+            value: formatters.codeBlock(formattedVolumeHrUsd),
             inline: true,
           },
           {
-            name: "1Hr Volume",
-            value: formatters.codeBlock(formattedVolumeHrUsd),
+            name: "1D Volume",
+            value: formatters.codeBlock(formattedVolumeDUSD),
             inline: true,
           },
           { name: "\u200B", value: "\u200B", inline: true }, // filler for layout
