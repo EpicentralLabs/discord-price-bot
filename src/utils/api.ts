@@ -174,3 +174,55 @@ export async function fetchLabsHistoricalChange(currentPrice: number): Promise<{
     return { change1w: null, change1m: null };
   }
 }
+
+/**
+ * Fetches price/volume data for a token from BirdEye for a given interval.
+ * @param address The token address.
+ * @param interval The interval type, e.g., "24h", "1h".
+ */
+export async function fetchTokenPriceVolume(
+  address: string,
+  interval: "24h" | "1h" = "24h"
+): Promise<{
+  price: number;
+  priceChangePercent: number;
+  volumeUSD: number;
+  volumeChangePercent: number;
+} | null> {
+  const token = process.env.BIRDEYE_TOKEN;
+  if (!token) {
+    console.warn("BirdEye API token is missing.");
+    return null;
+  }
+
+  try {
+    const res = await fetch(
+      `https://public-api.birdeye.so/defi/price_volume/single?address=${address}&type=${interval}`,
+      {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          "x-chain": "solana",
+          "X-API-KEY": token,
+        },
+      }
+    );
+    if (!res.ok) {
+      console.warn(
+        `BirdEye API error (price_volume) for ${address}: ${res.statusText}`
+      );
+      return null;
+    }
+    const data = await res.json();
+    if (!data.success) return null;
+    return {
+      price: data.data.price,
+      priceChangePercent: data.data.priceChangePercent,
+      volumeUSD: data.data.volumeUSD,
+      volumeChangePercent: data.data.volumeChangePercent,
+    };
+  } catch (err) {
+    console.error(`Failed to fetch price/volume for ${address}:`, err);
+    return null;
+  }
+}

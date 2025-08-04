@@ -10,6 +10,7 @@ import {
   fetchTokenPrice,
   fetchTokenOverview,
   fetchLabsHistoricalChange,
+  fetchTokenPriceVolume,
 } from "../utils/api";
 import { config } from "../config";
 
@@ -33,12 +34,22 @@ export async function handlePriceCommand(
     const solPrice = await fetchTokenPrice(CONSTANTS.TOKEN.SOL);
     const labsOverview = await fetchTokenOverview(CONSTANTS.TOKEN.LABS);
     const { change1w, change1m } = await fetchLabsHistoricalChange(labsPrice);
+    const [labsVolumeData, labsVolumeData1Hr] = await Promise.all([
+      fetchTokenPriceVolume(CONSTANTS.TOKEN.LABS, "24h"),
+      fetchTokenPriceVolume(CONSTANTS.TOKEN.LABS, "1h"),
+    ]);
 
     if (labsPrice && solPrice) {
       const formattedLabs = `$${labsPrice.toFixed(4)}`;
       const formattedSOL = `$${solPrice.toFixed(config.PRICE_DECIMAL_PLACES)}`;
       const labsPerSol = labsPrice / solPrice;
       const formattedLabsSol = labsPerSol.toFixed(6);
+      const formattedVolumeDUSD = labsVolumeData
+        ? `$${formatters.usdValue(labsVolumeData.volumeUSD)}`
+        : "N/A";
+      const formattedVolumeHrUsd = labsVolumeData1Hr
+        ? `$${formatters.usdValue(labsVolumeData1Hr.volumeUSD)}`
+        : "N/A";
 
       const formattedLabsLiquidity = labsOverview
         ? `$${formatters.usdValue(labsOverview.liquidity)}`
@@ -100,6 +111,17 @@ export async function handlePriceCommand(
             value: formatters.codeBlock(formattedChange1m),
             inline: true,
           },
+          {
+            name: "1Hr Volume",
+            value: formatters.codeBlock(formattedVolumeHrUsd),
+            inline: true,
+          },
+          {
+            name: "1D Volume",
+            value: formatters.codeBlock(formattedVolumeDUSD),
+            inline: true,
+          },
+          { name: "\u200B", value: "\u200B", inline: true }, // filler for layout
           { name: "**📈 Market Tokens**", value: "", inline: false },
           {
             name: "SOL",
