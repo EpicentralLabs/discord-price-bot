@@ -6,6 +6,7 @@ export const CONSTANTS = {
   },
   TOKEN: {
     LABS: "LABSh5DTebUcUbEoLzXKCiXFJLecDFiDWiBGUU1GpxR",
+    WATTLABS: "CLTSX6LYEd6qUxLfZNzyg7pB39Lrkfm4fhddbyyTBdJ2",
     SOL: "So11111111111111111111111111111111111111112",
   }
 } as const;

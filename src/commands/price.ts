@@ -15,7 +15,7 @@ import {
 import { config } from "../config";
 
 export const command = new SlashCommandBuilder()
-  .setName("price")
+  .setName("price-labs")
   .setDescription("Get the current prices and liquidity for LABS and SOL.");
 
 /**
@@ -26,17 +26,28 @@ export const command = new SlashCommandBuilder()
 export async function handlePriceCommand(
   interaction: ChatInputCommandInteraction
 ) {
+  await handleTokenPriceCommand(interaction, CONSTANTS.TOKEN.LABS, "Labs");
+}
+
+/**
+ * Generic handler for token price commands.
+ */
+export async function handleTokenPriceCommand(
+  interaction: ChatInputCommandInteraction,
+  token: string,
+  tokenName: string
+) {
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
   console.log("Fetching prices and liquidity...");
 
   try {
-    const labsPrice = await fetchTokenPrice(CONSTANTS.TOKEN.LABS);
+    const labsPrice = await fetchTokenPrice(token);
     const solPrice = await fetchTokenPrice(CONSTANTS.TOKEN.SOL);
-    const labsOverview = await fetchTokenOverview(CONSTANTS.TOKEN.LABS);
+    const labsOverview = await fetchTokenOverview(token);
     const { change1w, change1m } = await fetchLabsHistoricalChange(labsPrice);
     const [labsVolumeData, labsVolumeData1Hr] = await Promise.all([
-      fetchTokenPriceVolume(CONSTANTS.TOKEN.LABS, "24h"),
-      fetchTokenPriceVolume(CONSTANTS.TOKEN.LABS, "1h"),
+      fetchTokenPriceVolume(token, "24h"),
+      fetchTokenPriceVolume(token, "1h"),
     ]);
 
     if (labsPrice && solPrice) {
@@ -68,7 +79,7 @@ export async function handlePriceCommand(
 
       const embed = new EmbedBuilder()
         .setColor(CONSTANTS.COLORS.PRIMARY)
-        .setTitle("🟦 Labs Token Prices & Liquidity")
+        .setTitle(`🟦 ${tokenName} Token Prices & Liquidity`)
         .addFields(
           {
             name: "Price",

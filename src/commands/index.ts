@@ -1,10 +1,12 @@
-import { Client, REST, Routes, MessageFlags, ChatInputCommandInteraction } from "discord.js";
+import { Client, REST, Routes, MessageFlags } from "discord.js";
 import * as price from "./price";
+import * as wattlabs from "./wattlabs";
 import { config } from "../config";
 
 // Create a map of command handlers
 const commandHandlers = {
   [price.command.name]: price.handlePriceCommand,
+  [wattlabs.command.name]: wattlabs.handleWattlabsCommand,
 } as const;
 
 /**
@@ -21,6 +23,7 @@ export async function setupCommands(client: Client) {
 
   const commands = [
     price.command,
+    wattlabs.command,
   ].map((command) => command.toJSON());
   const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
   try {

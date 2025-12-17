@@ -2,29 +2,51 @@ import { Client, ActivityType } from "discord.js";
 import { config } from "../config";
 import { fetchTokenPrice } from "../utils/api";
 import { CONSTANTS } from "../utils/constants";
+import { TokenType } from "../utils/types";
 
 export class StatusManager {
   private client: Client;
   private updateInterval: NodeJS.Timeout | null;
+  private currentTokenIndex: number;
+  private readonly tokens: TokenType[];
 
   constructor(client: Client) {
     this.client = client;
     this.updateInterval = null;
+    this.currentTokenIndex = 0;
+    this.tokens = [TokenType.LABS, TokenType.WATTLABS];
   }
 
-  async updateBotStatus(): Promise<void> {
+  async updateBotStatus(token: TokenType): Promise<void> {
     try {
       console.log(`Attempting to update status...`);
 
+      let tokenAddress = "";
+
+      switch (token) {
+        case TokenType.LABS:
+          console.log("Updating status for LABS...")
+          tokenAddress = CONSTANTS.TOKEN.LABS;
+          break;
+        case TokenType.WATTLABS:
+          console.log("Updating status for wattLABS...")
+          tokenAddress = CONSTANTS.TOKEN.WATTLABS;
+          break;
+        default:
+          console.log("New token type detected, defaulting to LABS...");
+          tokenAddress = CONSTANTS.TOKEN.LABS;
+          break;
+      }
+
       if (this.client.user) {
-        const labsPrice = await fetchTokenPrice(CONSTANTS.TOKEN.LABS);
+        const price = await fetchTokenPrice(tokenAddress);
 
         // Update nickname in all guilds
         for (const guild of this.client.guilds.cache.values()) {
           try {
             const me = guild.members.cache.get(this.client.user.id);
             if (me) {
-              await me.setNickname("$"+labsPrice.toFixed(4));
+              await me.setNickname("$"+price.toFixed(4));
             }
           } catch (err) {
             console.error(
@@ -35,13 +57,13 @@ export class StatusManager {
         }
 
         // Keep the existing watching status
-        const status = `LABS Price`;
+        const status = `Tracking ${token} Price`;
         await this.client.user.setActivity(status, {
           type: ActivityType.Watching,
         });
 
         console.log(
-          `Nickname and status updated successfully: ${labsPrice} | ${status}`
+          `Nickname and status updated successfully: ${price} | ${status}`
         );
       } else {
         console.error(`Failed to update status`);
@@ -60,11 +82,13 @@ export class StatusManager {
     }
 
     // Immediate first update
-    this.updateBotStatus();
+    this.updateBotStatus(this.tokens[this.currentTokenIndex]);
 
     // Set up the interval
     this.updateInterval = setInterval(() => {
-      this.updateBotStatus();
+      this.currentTokenIndex =
+        (this.currentTokenIndex + 1) % this.tokens.length;
+      this.updateBotStatus(this.tokens[this.currentTokenIndex]);
     }, config.UPDATE_INTERVAL * 1000);
 
     console.log(

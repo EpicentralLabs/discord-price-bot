@@ -2,6 +2,7 @@ import { config } from "../config";
 
 export const formatters = {
   usdValue: (value: string | number): string => {
+    if (value === null || value === undefined || isNaN(Number(value))) return "N/A";
     // Remove any existing commas
     const cleanValue = typeof value === "string" ? value.replace(/,/g, "") : value.toString();
     // Parse to float and fix decimal places
