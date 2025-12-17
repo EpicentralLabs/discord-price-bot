@@ -60,7 +60,7 @@ export async function handleTokenPriceCommand(
       const formattedToken = `$${tokenPrice.toFixed(4)}`;
       const formattedSOL = `$${solPrice.toFixed(config.PRICE_DECIMAL_PLACES)}`;
       const tokenPerSol = tokenPrice / solPrice;
-      const formattedLabsSol = tokenPerSol.toFixed(6);
+      const formattedTokenSol = tokenPerSol.toFixed(6);
       const formattedVolumeDUSD = volumeData24h
         ? `$${formatters.usdValue(volumeData24h.volumeUSD)}`
         : "N/A";
@@ -68,7 +68,7 @@ export async function handleTokenPriceCommand(
         ? `$${formatters.usdValue(volumeData1h.volumeUSD)}`
         : "N/A";
 
-      const formattedLabsLiquidity = tokenOverview
+      const formattedTokenLiquidity = tokenOverview
         ? `$${formatters.usdValue(tokenOverview.liquidity)}`
         : "N/A";
       const formattedMarketCap = tokenOverview
@@ -94,12 +94,12 @@ export async function handleTokenPriceCommand(
           },
           {
             name: "Liquidity",
-            value: formatters.codeBlock(formattedLabsLiquidity),
+            value: formatters.codeBlock(formattedTokenLiquidity),
             inline: true,
           },
           {
             name: `${tokenName}/SOL`,
-            value: formatters.codeBlock(formattedLabsSol),
+            value: formatters.codeBlock(formattedTokenSol),
             inline: true,
           },
           {

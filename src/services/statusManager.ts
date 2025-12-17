@@ -33,7 +33,9 @@ export class StatusManager {
           tokenAddress = CONSTANTS.TOKEN.WATTLABS;
           break;
         default:
-          console.log("New token type detected, defaulting to LABS...");
+          console.warn(
+            `Unexpected token type '${token}', defaulting to LABS...`
+          );
           tokenAddress = CONSTANTS.TOKEN.LABS;
           break;
       }

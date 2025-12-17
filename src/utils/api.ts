@@ -102,10 +102,10 @@ export async function fetchTokenOverview(address: string): Promise<{
 }
 
 /**
- * Calculates the 1-week and 1-month percentage price changes for the LABS token based on historical price data from the BirdEye API.
+ * Calculates the 1-week and 1-month percentage price changes for a token based on historical price data from the BirdEye API.
  *
  * @param address - The token address to fetch historical prices for
- * @param currentPrice - The current price of the LABS token used as the reference for change calculations.
+ * @param currentPrice - The current price of a token used as the reference for change calculations.
  * @returns An object containing the percentage changes over 1 week (`change1w`) and 1 month (`change1m`), or `null` values if data is unavailable.
  */
 export async function fetchHistoricalChange(address: string, currentPrice: number): Promise<{
@@ -170,7 +170,7 @@ export async function fetchHistoricalChange(address: string, currentPrice: numbe
 
     return { change1w, change1m };
   } catch (err) {
-    console.error("Failed to fetch LABS historical price:", err);
+    console.error(`Failed to fetch historical price for ${address}:`, err);
     return { change1w: null, change1m: null };
   }
 }
