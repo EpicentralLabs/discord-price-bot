@@ -9,7 +9,7 @@ import { CONSTANTS } from "../utils/constants";
 import {
   fetchTokenPrice,
   fetchTokenOverview,
-  fetchLabsHistoricalChange,
+  fetchHistoricalChange,
   fetchTokenPriceVolume,
 } from "../utils/api";
 import { config } from "../config";
@@ -19,7 +19,7 @@ export const command = new SlashCommandBuilder()
   .setDescription("Get the current prices and liquidity for LABS and SOL.");
 
 /**
- * Handles the `/price` Discord slash command by fetching and displaying current price, liquidity, market cap, holder count, and recent price changes for LABS and SOL tokens.
+ * Handles the `/price-labs` Discord slash command by fetching and displaying current price, liquidity, market cap, holder count, and recent price changes for LABS and SOL tokens.
  *
  * Responds with an embedded message containing up-to-date token metrics, or an error message if data retrieval fails.
  */
@@ -31,6 +31,9 @@ export async function handlePriceCommand(
 
 /**
  * Generic handler for token price commands.
+ * @param interaction - The Discord slash command interaction
+ * @param token - The token address to fetch price data for
+ * @param tokenName - Display name for the token (e.g., "Labs", "WattLabs")
  */
 export async function handleTokenPriceCommand(
   interaction: ChatInputCommandInteraction,
@@ -41,38 +44,41 @@ export async function handleTokenPriceCommand(
   console.log("Fetching prices and liquidity...");
 
   try {
-    const labsPrice = await fetchTokenPrice(token);
+    const tokenPrice = await fetchTokenPrice(token);
     const solPrice = await fetchTokenPrice(CONSTANTS.TOKEN.SOL);
-    const labsOverview = await fetchTokenOverview(token);
-    const { change1w, change1m } = await fetchLabsHistoricalChange(labsPrice);
-    const [labsVolumeData, labsVolumeData1Hr] = await Promise.all([
+    const tokenOverview = await fetchTokenOverview(token);
+    const { change1w, change1m } = await fetchHistoricalChange(
+      token,
+      tokenPrice
+    );
+    const [volumeData24h, volumeData1h] = await Promise.all([
       fetchTokenPriceVolume(token, "24h"),
       fetchTokenPriceVolume(token, "1h"),
     ]);
 
-    if (labsPrice && solPrice) {
-      const formattedLabs = `$${labsPrice.toFixed(4)}`;
+    if (tokenPrice && solPrice) {
+      const formattedToken = `$${tokenPrice.toFixed(4)}`;
       const formattedSOL = `$${solPrice.toFixed(config.PRICE_DECIMAL_PLACES)}`;
-      const labsPerSol = labsPrice / solPrice;
-      const formattedLabsSol = labsPerSol.toFixed(6);
-      const formattedVolumeDUSD = labsVolumeData
-        ? `$${formatters.usdValue(labsVolumeData.volumeUSD)}`
+      const tokenPerSol = tokenPrice / solPrice;
+      const formattedLabsSol = tokenPerSol.toFixed(6);
+      const formattedVolumeDUSD = volumeData24h
+        ? `$${formatters.usdValue(volumeData24h.volumeUSD)}`
         : "N/A";
-      const formattedVolumeHrUsd = labsVolumeData1Hr
-        ? `$${formatters.usdValue(labsVolumeData1Hr.volumeUSD)}`
+      const formattedVolumeHrUsd = volumeData1h
+        ? `$${formatters.usdValue(volumeData1h.volumeUSD)}`
         : "N/A";
 
-      const formattedLabsLiquidity = labsOverview
-        ? `$${formatters.usdValue(labsOverview.liquidity)}`
+      const formattedLabsLiquidity = tokenOverview
+        ? `$${formatters.usdValue(tokenOverview.liquidity)}`
         : "N/A";
-      const formattedMarketCap = labsOverview
-        ? `$${formatters.usdValue(labsOverview.marketCap)}`
+      const formattedMarketCap = tokenOverview
+        ? `$${formatters.usdValue(tokenOverview.marketCap)}`
         : "N/A";
-      const formattedHolders = labsOverview
-        ? labsOverview.holder.toString()
+      const formattedHolders = tokenOverview
+        ? tokenOverview.holder.toString()
         : "N/A";
-      const formattedPercent = labsOverview
-        ? `${labsOverview.priceChange24hPercent.toFixed(2)}%`
+      const formattedPercent = tokenOverview
+        ? `${tokenOverview.priceChange24hPercent.toFixed(2)}%`
         : "N/A";
       const formattedChange1w = change1w ? `${change1w.toFixed(2)}%` : "N/A";
       const formattedChange1m = change1m ? `${change1m.toFixed(2)}%` : "N/A";
@@ -83,7 +89,7 @@ export async function handleTokenPriceCommand(
         .addFields(
           {
             name: "Price",
-            value: formatters.codeBlock(formattedLabs),
+            value: formatters.codeBlock(formattedToken),
             inline: true,
           },
           {
@@ -92,7 +98,7 @@ export async function handleTokenPriceCommand(
             inline: true,
           },
           {
-            name: "LABS/SOL",
+            name: `${tokenName}/SOL`,
             value: formatters.codeBlock(formattedLabsSol),
             inline: true,
           },

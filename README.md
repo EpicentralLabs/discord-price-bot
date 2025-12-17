@@ -6,9 +6,9 @@ A Discord bot that tracks and displays LABS token prices and liquidity informati
 
 - Real-time price tracking for LABS and SOL tokens
 - Automatic bot status updates showing current LABS price
-- Slash command `/price` to get detailed token information:
-  - LABS token price in USD
-  - LABS/SOL ratio
+- Slash command `/price-labs` or `price-wattlabs` to get detailed token information:
+  - LABS or wattLABS token price in USD
+  - LABS or wattLABS/SOL ratio
   - Current liquidity
   - SOL price in USD
 

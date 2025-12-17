@@ -25,11 +25,11 @@ export class StatusManager {
 
       switch (token) {
         case TokenType.LABS:
-          console.log("Updating status for LABS...")
+          console.log("Updating status for LABS...");
           tokenAddress = CONSTANTS.TOKEN.LABS;
           break;
         case TokenType.WATTLABS:
-          console.log("Updating status for wattLABS...")
+          console.log("Updating status for wattLABS...");
           tokenAddress = CONSTANTS.TOKEN.WATTLABS;
           break;
         default:
@@ -41,12 +41,17 @@ export class StatusManager {
       if (this.client.user) {
         const price = await fetchTokenPrice(tokenAddress);
 
+        if (price === null || price === undefined) {
+          console.error(`Failed to fetch price for ${token}`);
+          return;
+        }
+
         // Update nickname in all guilds
         for (const guild of this.client.guilds.cache.values()) {
           try {
             const me = guild.members.cache.get(this.client.user.id);
             if (me) {
-              await me.setNickname("$"+price.toFixed(4));
+              await me.setNickname("$" + price.toFixed(4));
             }
           } catch (err) {
             console.error(
